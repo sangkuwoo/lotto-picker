@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7ff">
+  <title>로또 번호 추출기</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+      color: #17213b;
+      background: #f5f7ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 28px 16px;
+      background: radial-gradient(ellipse at 50% 0%, #e3e9ff 0, #f5f7ff 55%);
+    }
+    .card {
+      width: min(100%, 700px);
+      padding: clamp(24px, 6vw, 46px);
+      border: 1px solid #e7eaf3;
+      border-radius: 28px;
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 22px 70px rgba(36, 54, 111, .11);
+    }
+    header { position: relative; text-align: center; }
+    #theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: auto;
+      margin: 0;
+      padding: 8px 11px;
+      color: #59627b;
+      background: #f2f4f9;
+      box-shadow: none;
+      font-size: 12px;
+    }
+    #theme-toggle:hover { background: #e9ecf4; box-shadow: none; }
+    .eyebrow {
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: 999px;
+      color: #4c5fc5;
+      background: #eef0ff;
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: .08em;
+    }
+    h1 { margin: 15px 0 8px; font-size: clamp(27px, 6vw, 38px); letter-spacing: -.045em; }
+    .subtitle { margin: 0; color: #77809a; font-size: 15px; }
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 26px 0 14px;
+    }
+    .controls span { color: #59627b; font-size: 14px; font-weight: 700; }
+    #results { display: grid; gap: 13px; }
+    .draw {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(7px, 2.5vw, 15px);
+      padding: 12px 10px;
+      border: 1px solid #edf0f6;
+      border-radius: 18px;
+      background: #fcfcff;
+      animation: appear .28s ease both;
+    }
+    .ball {
+      width: clamp(39px, 10vw, 54px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff;
+      font-size: clamp(15px, 4vw, 19px);
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      box-shadow: inset 0 -3px 0 rgba(0,0,0,.1), 0 4px 9px rgba(18,30,70,.1);
+    }
+    .ball[data-band="1"] { background: linear-gradient(145deg, #ffc949, #f3a900); }
+    .ball[data-band="2"] { background: linear-gradient(145deg, #68b5ff, #2676e8); }
+    .ball[data-band="3"] { background: linear-gradient(145deg, #ff8588, #ed3f49); }
+    .ball[data-band="4"] { background: linear-gradient(145deg, #aaa5b7, #777284); }
+    .ball[data-band="5"] { background: linear-gradient(145deg, #8cda71, #4aaa37); }
+    button {
+      width: 100%;
+      margin-top: 18px;
+      padding: 15px 20px;
+      border: 0;
+      border-radius: 15px;
+      color: white;
+      background: linear-gradient(110deg, #5569df, #754ed6);
+      box-shadow: 0 9px 20px rgba(87, 94, 207, .25);
+      cursor: pointer;
+      font: inherit;
+      font-size: 16px;
+      font-weight: 750;
+      transition: transform .15s, box-shadow .15s;
+    }
+    button:hover { transform: translateY(-1px); box-shadow: 0 12px 25px rgba(87, 94, 207, .32); }
+    button:active { transform: translateY(1px); }
+    button:focus-visible { outline: 3px solid #b9c2ff; outline-offset: 3px; }
+    button.secondary { color: #4b5bc1; background: #eef0ff; box-shadow: none; }
+    button.secondary:hover { background: #e4e7ff; box-shadow: none; }
+    .saved-section { margin-top: 34px; padding-top: 25px; border-top: 1px solid #edf0f6; }
+    .saved-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
+    .saved-count { margin-left: 5px; color: #7a84a1; font-size: 13px; font-weight: 600; }
+    #clear-saved { width: auto; margin: 0; padding: 8px 11px; color: #717b95; background: #f2f4f9; box-shadow: none; font-size: 12px; }
+    #clear-saved:hover { box-shadow: none; background: #e9ecf4; }
+    #saved-list { display: grid; gap: 11px; margin-top: 15px; }
+    .saved-card { padding: 13px 14px; border: 1px solid #edf0f6; border-radius: 15px; background: #fcfcff; }
+    .saved-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; color: #7b849c; font-size: 12px; }
+    .saved-game { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 0; border-top: 1px solid #f0f2f7; }
+    .saved-game:first-of-type { border-top: 0; }
+    .game-label { width: 42px; flex: none; color: #7b849c; font-size: 12px; }
+    .saved-game .ball { width: clamp(29px, 7vw, 38px); font-size: 13px; }
+    .saved-game .balls { display: flex; gap: clamp(4px, 1.6vw, 9px); }
+    .delete-one { width: auto; margin: 0; padding: 6px 9px; color: #a34750; background: #fff0f0; box-shadow: none; font-size: 12px; }
+    .delete-one:hover { box-shadow: none; background: #ffe5e6; }
+    .empty { margin: 13px 0 0; color: #9299ac; font-size: 13px; text-align: center; }
+    .note { margin: 17px 0 0; color: #9299ac; text-align: center; font-size: 12px; line-height: 1.6; }
+    body[data-theme="dark"] {
+      color: #edf0ff;
+      background: radial-gradient(ellipse at 50% 0%, #242a48 0, #131625 58%);
+    }
+    body[data-theme="dark"] .card { border-color: #303650; background: rgba(29, 33, 52, .97); box-shadow: 0 22px 70px rgba(0,0,0,.3); }
+    body[data-theme="dark"] .eyebrow { color: #c1c8ff; background: #30365b; }
+    body[data-theme="dark"] .subtitle,
+    body[data-theme="dark"] .controls span,
+    body[data-theme="dark"] .saved-count,
+    body[data-theme="dark"] .saved-meta,
+    body[data-theme="dark"] .game-label { color: #aeb6d0; }
+    body[data-theme="dark"] .draw,
+    body[data-theme="dark"] .saved-card { border-color: #353b56; background: #242940; }
+    body[data-theme="dark"] .saved-section { border-top-color: #353b56; }
+    body[data-theme="dark"] .saved-game { border-top-color: #353b56; }
+    body[data-theme="dark"] #theme-toggle,
+    body[data-theme="dark"] #clear-saved { color: #d5daf0; background: #343a53; }
+    body[data-theme="dark"] #theme-toggle:hover,
+    body[data-theme="dark"] #clear-saved:hover { background: #414965; }
+    body[data-theme="dark"] button.secondary { color: #d2d7ff; background: #343a60; }
+    body[data-theme="dark"] button.secondary:hover { background: #414875; }
+    body[data-theme="dark"] .delete-one { color: #ffb9bf; background: #50343d; }
+    body[data-theme="dark"] .delete-one:hover { background: #65404a; }
+    body[data-theme="dark"] .empty,
+    body[data-theme="dark"] .note { color: #9ba4bf; }
+    @keyframes appear { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    @media (max-width: 420px) { .saved-card { padding: 11px 9px; } }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <header>
+      <button id="theme-toggle" type="button" aria-label="다크 모드로 전환">☾ 다크</button>
+      <span class="eyebrow">LOTTO 6/45</span>
+      <h1>행운 번호 뽑기</h1>
+    <p class="subtitle">5천 원어치, 행운의 5게임을 추천해드려요.</p>
+    </header>
+    <section class="controls" aria-label="추출 설정">
+      <span>한 게임당 번호 6개 · 총 5게임</span>
+    </section>
+    <section id="results" aria-live="polite" aria-label="추출된 로또 번호"></section>
+    <button id="draw" type="button">번호 추출하기</button>
+    <button id="save" class="secondary" type="button">이 5게임 저장하기</button>
+    <section class="saved-section" aria-labelledby="saved-title">
+      <div class="saved-heading">
+        <h2 id="saved-title">저장한 번호 <span id="saved-count" class="saved-count"></span></h2>
+        <button id="clear-saved" type="button">전체 삭제</button>
+      </div>
+      <div id="saved-list" aria-live="polite"></div>
+    </section>
+    <p class="note">번호는 무작위로 추출되며 당첨을 보장하지 않습니다.</p>
+  </main>
+  <script>
+    const results = document.querySelector('#results');
+    const storageKey = 'lotto-picker-saved-v1';
+    const themeKey = 'lotto-picker-theme-v1';
+    let currentGames = [];
+
+    function setTheme(theme) {
+      document.body.dataset.theme = theme;
+      const dark = theme === 'dark';
+      const button = document.querySelector('#theme-toggle');
+      button.textContent = dark ? '☀ 라이트' : '☾ 다크';
+      button.setAttribute('aria-label', dark ? '라이트 모드로 전환' : '다크 모드로 전환');
+    }
+
+    let savedTheme = null;
+    try { savedTheme = localStorage.getItem(themeKey); } catch {}
+    setTheme(savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+    document.querySelector('#theme-toggle').addEventListener('click', () => {
+      const nextTheme = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+      setTheme(nextTheme);
+      try { localStorage.setItem(themeKey, nextTheme); } catch {}
+    });
+
+    function readSaved() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        return Array.isArray(saved) ? saved : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function pickNumbers() {
+      // 부분 Fisher–Yates 셔플로 1~45 중 서로 다른 6개를 고릅니다.
+      const pool = Array.from({ length: 45 }, (_, index) => index + 1);
+      for (let i = 0; i < 6; i++) {
+        const j = i + Math.floor(Math.random() * (45 - i));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      return pool.slice(0, 6).sort((a, b) => a - b);
+    }
+
+    function render() {
+      results.replaceChildren();
+      currentGames = Array.from({ length: 5 }, pickNumbers);
+      currentGames.forEach((numbers, game) => {
+        const row = document.createElement('div');
+        row.className = 'draw';
+        row.style.animationDelay = `${game * 45}ms`;
+        row.setAttribute('aria-label', `${game + 1}게임: ${numbers.join(', ')}`);
+        for (const number of numbers) {
+          const ball = document.createElement('span');
+          ball.className = 'ball';
+          ball.dataset.band = String(Math.ceil(number / 10));
+          ball.textContent = String(number);
+          ball.setAttribute('aria-hidden', 'true');
+          row.append(ball);
+        }
+        results.append(row);
+      });
+    }
+
+    function makeBalls(numbers) {
+      const container = document.createElement('div');
+      container.className = 'balls';
+      for (const number of numbers) {
+        const ball = document.createElement('span');
+        ball.className = 'ball';
+        ball.dataset.band = String(Math.ceil(number / 10));
+        ball.textContent = String(number);
+        ball.setAttribute('aria-hidden', 'true');
+        container.append(ball);
+      }
+      return container;
+    }
+
+    function renderSaved() {
+      const saved = readSaved();
+      const list = document.querySelector('#saved-list');
+      list.replaceChildren();
+      document.querySelector('#saved-count').textContent = saved.length ? `(${saved.length})` : '';
+      if (!saved.length) {
+        const empty = document.createElement('p');
+        empty.className = 'empty';
+        empty.textContent = '저장한 번호가 여기에 표시됩니다.';
+        list.append(empty);
+        return;
+      }
+      saved.forEach((entry, index) => {
+        const card = document.createElement('article');
+        card.className = 'saved-card';
+        const meta = document.createElement('div');
+        meta.className = 'saved-meta';
+        const date = new Date(entry.savedAt);
+        const stamp = document.createElement('span');
+        stamp.textContent = Number.isNaN(date.getTime()) ? '저장한 조합' : date.toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' });
+        meta.append(stamp);
+        card.append(meta);
+        entry.games.forEach((numbers, gameIndex) => {
+          const row = document.createElement('div');
+          row.className = 'saved-game';
+          row.setAttribute('aria-label', `${gameIndex + 1}게임: ${numbers.join(', ')}`);
+          const label = document.createElement('span');
+          label.textContent = `${gameIndex + 1}게임`;
+          label.className = 'game-label';
+          row.append(label, makeBalls(numbers));
+          card.append(row);
+        });
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'delete-one';
+        remove.textContent = '삭제';
+        remove.setAttribute('aria-label', `${index + 1}번째 저장 조합 삭제`);
+        remove.addEventListener('click', () => {
+          const updated = readSaved();
+          updated.splice(index, 1);
+          localStorage.setItem(storageKey, JSON.stringify(updated));
+          renderSaved();
+        });
+        meta.append(remove);
+        list.append(card);
+      });
+    }
+
+    document.querySelector('#draw').addEventListener('click', render);
+    document.querySelector('#save').addEventListener('click', () => {
+      const saved = readSaved();
+      saved.unshift({ savedAt: new Date().toISOString(), games: currentGames });
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(saved));
+        renderSaved();
+      } catch {
+        window.alert('저장 공간을 사용할 수 없어요. 브라우저 설정을 확인해 주세요.');
+      }
+    });
+    document.querySelector('#clear-saved').addEventListener('click', () => {
+      if (!readSaved().length || !window.confirm('저장된 번호를 모두 삭제할까요?')) return;
+      localStorage.removeItem(storageKey);
+      renderSaved();
+    });
+    render();
+    renderSaved();
+  </script>
+</body>
+</html>
