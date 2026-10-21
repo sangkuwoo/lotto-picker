@@ -157,7 +157,33 @@
     body[data-theme="dark"] .note { color: #9ba4bf; }
     @keyframes appear { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
-    @media (max-width: 420px) { .saved-card { padding: 11px 9px; } }
+    @media (max-width: 480px) {
+      body { padding: 16px 12px; }
+      .card { width: 100%; padding: 24px 16px 22px; border-radius: 22px; }
+      header { padding-top: 34px; }
+      #theme-toggle { top: 0; right: 0; padding: 7px 9px; font-size: 11px; }
+      .subtitle { font-size: 14px; }
+      .controls { margin: 22px 0 13px; }
+      .controls span { font-size: 13px; }
+      .draw { min-height: 66px; gap: clamp(4px, 2vw, 9px); padding: 10px 6px; }
+      .ball { width: clamp(32px, 10vw, 44px); font-size: clamp(14px, 4vw, 17px); }
+      .saved-section { margin-top: 27px; padding-top: 21px; }
+      .saved-card { padding: 11px 9px; }
+      .saved-game { gap: 5px; }
+      .game-label { width: 36px; }
+      .saved-game .balls { gap: clamp(3px, 1vw, 6px); }
+      .saved-game .ball { width: clamp(25px, 7.5vw, 34px); font-size: 12px; }
+    }
+    @media (max-width: 350px) {
+      body { padding: 12px 8px; }
+      .card { padding-right: 12px; padding-left: 12px; }
+      .draw { gap: 4px; }
+      .ball { width: 32px; }
+      .saved-game { gap: 3px; }
+      .game-label { width: 33px; font-size: 11px; }
+      .saved-game .balls { gap: 2px; }
+      .saved-game .ball { width: 25px; }
+    }
   </style>
 </head>
 <body>
